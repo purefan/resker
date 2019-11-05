@@ -1,0 +1,40 @@
+{
+  "name": "resker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "nodemon --config nodemon.test.json",
+    "dev": "nodemon --config nodemon.dev.json",
+    "serve": "DEBUG=* node index serve"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/purefan/resker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gitlab.com/purefan/resker/issues"
+  },
+  "homepage": "https://gitlab.com/purefan/resker#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "chess.js": "^0.10.2",
+    "debug": "^4.1.1",
+    "dotcnf": "^1.0.3",
+    "express": "^4.17.1",
+    "express-validator": "^6.2.0",
+    "mongodb": "^3.3.2",
+    "mysql": "^2.17.1",
+    "mysqljs": "0.0.2-security",
+    "nodemon": "^1.19.3",
+    "osprey": "^0.5.4",
+    "raml2obj": "^6.6.0",
+    "shelljs": "^0.8.3"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.1",
+    "supertest": "^4.0.2"
+  }
+}

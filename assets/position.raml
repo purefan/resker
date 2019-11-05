@@ -1,0 +1,64 @@
+#%RAML 1.0 Library
+usage: These types relate to a Game.
+types:
+  position:
+    description: A full position from the database
+    type: object
+    properties:
+      fen: string
+      depth_goal: depth_goal
+      multipv_goal?: multipv_goal
+      priority: priority
+      status: status
+      analysis:
+        type: array
+        items: position_analysis
+        uniqueItems: true
+  multipv_goal:
+    type: integer
+    minimum: 1
+    description: The ideal number of variations to consider
+    default: 1
+  status:
+    type: integer
+    minimum: 0
+    description: 0:New position; 1:Being analyzed; 2:Fully analyzed
+  update_status:
+    description: The object sent to update the status of a position
+    properties:
+      status: status
+      fen: string
+  position_analysis:
+    description: A full analysis of a position according to an engine
+    type: object
+    properties:
+      engine_name: string
+      score: number
+      depth: integer
+      multipv: integer
+      best_move:
+        type: string
+        description: In SAN format
+      nodes?: number
+      time?: number
+      steps?: array
+  depth_goal:
+    description: How many plies would mark this analysis complete
+    type: integer
+    minimum: 20
+  priority:
+    type: integer
+    format: int8
+    minimum: 1
+    maximum: 10
+  engine_name:
+    type: string
+    minLength: 5
+    maxLength: 20
+  position_new:
+    description: Object sent by the client when adding a new position
+    type: object
+    properties:
+      fen: string
+      depth_goal?: depth_goal
+      priority?: priority

@@ -1,0 +1,8 @@
+{
+    "verbose": true,
+    "ignore": [
+        "test/*.js"
+    ],
+    "ext": "js,raml",
+    "exec": "clear && DEBUG=resker:* node index.js"
+}

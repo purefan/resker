@@ -1,0 +1,10 @@
+{
+    // Comments are supported
+    "uid": "resker-server",
+    "append": true,
+    "watch": true,
+    "script": "index.js",
+    "args": [
+        "serve"
+    ]
+}
