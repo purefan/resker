@@ -1,5 +1,4 @@
 #!/bin/node
-
 const osprey = require('osprey')
 const express = require('express')
 const join = require('path').join
@@ -28,13 +27,17 @@ function handler() {
 }
 
 (async function () {
+    if (!process.env.MONGO_HOST || process.env.MONGO_HOST.length < 5) {
+        throw new Error('MONGO_HOST is not set')
+    }
     const path = join(__dirname, 'assets', 'api.raml')
+    const security_definition = {
+        api_key: function () {
+            return { handler }
+        }
+    }
     const middleware = await osprey.loadFile(path, {
-        security: {
-            api_key: function () {
-                return { handler }
-            }
-        },
+        security: security_definition,
         disableErrorInterception: true,
         rejectOnErrors: true,
         strict: true
@@ -63,7 +66,7 @@ function handler() {
         res.status(500).send('Internal server error')
     })
 
-    app.listen(10001, () => { console.log('Listening on 10001') })
+    app.listen(8001, () => { console.log('Listening on 8001') })
 })()
 
 /**
@@ -140,18 +143,17 @@ async function put_position_status(req, res) {
  * @param {*} res
  */
 async function post_position(req, res) {
-    const log = debug('post_position')
     console.log('location %O %O', req.body)
     const position = new Position(req.body.fen)
     await position.connect()
     try {
         await position.add({
             depth_goal: req.body.depth_goal,
-            priotity: req.body.priority
+            priority: req.body.priority
         })
         res.status(200).send()
     } catch (error) {
-        log('Error %O', error)
+        console.log('Error %O', error)
         res.status(400).send(error.errmsg || error.message || error)
     }
 }
