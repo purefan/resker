@@ -1,0 +1,28 @@
+version: '2.1'
+services:
+  db:
+    image: mongo
+    container_name: resker-mongo
+    restart: always
+    hostname: resker-mongo
+    environment:
+      - MONGO_INITDB_DATABASE=resker
+    volumes:
+      - ./mongo-volume:/data/db
+    ports:
+      - 27017:27017
+
+  resker:
+    image: purefan/resker
+    container_name: resker-app
+    hostname: resker-app
+    links:
+      - db
+    depends_on:
+      - 'db'
+    environment:
+      - DEBUG=*
+      - MONGO_HOST=resker-mongo
+      - X_API_KEY=${X_API_KEY:-894hmt3x489ht89p3x}
+    ports:
+      - 8001:8001

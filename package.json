@@ -6,7 +6,7 @@
   "scripts": {
     "test": "nodemon --config nodemon.test.json",
     "dev": "nodemon --config nodemon.dev.json",
-    "serve": "DEBUG=* node index serve"
+    "serve": "DEBUG=resker node index.js"
   },
   "repository": {
     "type": "git",
@@ -24,12 +24,13 @@
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "express-validator": "^6.2.0",
+    "forever": "^1.0.0",
     "mongodb": "^3.3.2",
-    "nodemon": "^1.19.3",
     "osprey": "^0.5.4",
     "raml2obj": "^6.6.0"
   },
   "devDependencies": {
+    "nodemon": "^1.19.3",
     "mocha": "^6.2.1",
     "supertest": "^4.0.2"
   }
