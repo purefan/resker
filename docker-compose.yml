@@ -25,4 +25,4 @@ services:
       - MONGO_HOST=resker-mongo
       - X_API_KEY=${X_API_KEY:-894hmt3x489ht89p3x}
     ports:
-      - 8001:8001
+      - "${HTTP_PORT:-8001}:8001"
