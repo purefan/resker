@@ -14,15 +14,17 @@ function handler() {
      */
     return function (req, res, next) {
         const log = debug.extend('validator')
-        log('validator handler %O %s', req.headers, req.originalUrl)
+        log('validator handler %s %s %O', req.method, req.originalUrl, req.headers)
         if (!req.headers[ 'x-api-key' ]) {
-            return res.status(401).send('No key')
+            log('Rejecting because no api-key found')
+            return res.status(401).send('No api key.')
+        }
+        if (req.headers[ 'x-api-key' ] != process.env.X_API_KEY) {
+            log('Rejecting because the wrong api key was sent %s vs %s', req.headers[ 'x-api-key' ], process.env.X_API_KEY)
+            return res.status(401).send('Wrong api key.')
         }
 
-        // Check with the database and see if the token is valid.
-        setTimeout(function () {
-            return next()
-        }, 1000)
+        return next()
     }
 }
 
@@ -32,7 +34,7 @@ function handler() {
     }
     const path = join(__dirname, 'assets', 'api.raml')
     const security_definition = {
-        api_key: function () {
+        api_key: function api_key_handler() {
             return { handler }
         }
     }
