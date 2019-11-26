@@ -41,6 +41,24 @@ describe('1 - Position', function () {
             .expect(401)
     })
 
+    it('0.2 - Only the correct key works', function () {
+        return request
+            .get('/position/analysis/queue')
+            .set('x-api-key', Math.ceil(Math.random() * 999)) // Random key that should not be valid
+            .expect(401)
+    })
+
+    it('0.3 - Version check', function () {
+        return request
+            .get('/version')
+            .set('x-api-key', api_key)
+            .expect(200)
+            .expect(res => {
+                if (res.text != '0.7') throw new Error('Version check failed')
+            })
+    })
+})
+
     describe('1.1 - Queue', function () {
         it('1.1.1 - Queue position', function () {
             return request

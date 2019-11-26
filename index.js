@@ -49,6 +49,9 @@ function handler() {
     app.put('/position/status', middleware, put_position_status)
     app.get('/position', middleware, get_position)
     app.get('/position/analysis/queue', middleware, get_position_analysis_queue)
+    app.get('/version', function get_version(req, res) {
+        res.status(200).send('0.7')
+    })
 
     // eslint-disable-next-line no-unused-vars
     app.use(function error_handler(err, req, res, next) {
