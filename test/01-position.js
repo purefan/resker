@@ -48,7 +48,7 @@ describe('1 - Position', function () {
             .expect(401)
     })
 
-    it('0.3 - Version check', function () {
+    it('0.3 - Version and x-powered-by check', function () {
         return request
             .get('/version')
             .set('x-api-key', api_key)
@@ -56,7 +56,11 @@ describe('1 - Position', function () {
             .expect(res => {
                 if (res.text != '0.7') throw new Error('Version check failed')
             })
+            .expect(res => {
+                if (res.headers[ 'x-powered-by' ]) throw new Error('x-powered-by is present')
+            })
     })
+})
 })
 
     describe('1.1 - Queue', function () {

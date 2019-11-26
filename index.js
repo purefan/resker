@@ -44,6 +44,7 @@ function handler() {
         rejectOnErrors: true,
         strict: true
     })
+    app.disable('x-powered-by')
     app.post('/position', middleware, post_position)
     app.post('/position/analysis', middleware, post_position_analysis)
     app.put('/position/status', middleware, put_position_status)
