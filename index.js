@@ -13,14 +13,10 @@ function handler() {
      *
      */
     return function (req, res, next) {
-        const log = debug.extend('validator')
-        log('validator handler %s %s %O', req.method, req.originalUrl, req.headers)
         if (!req.headers[ 'x-api-key' ]) {
-            log('Rejecting because no api-key found')
             return res.status(401).send('No api key.')
         }
         if (req.headers[ 'x-api-key' ] != process.env.X_API_KEY) {
-            log('Rejecting because the wrong api key was sent %s vs %s', req.headers[ 'x-api-key' ], process.env.X_API_KEY)
             return res.status(401).send('Wrong api key.')
         }
 
@@ -72,7 +68,7 @@ function handler() {
         res.status(500).send('Internal server error')
     })
 
-    app.listen(8001, () => { console.log('Listening on 8001') })
+    app.listen(8001, () => { debug('Listening on 8001') })
 })()
 
 /**
@@ -92,7 +88,6 @@ async function post_position_analysis(req, res) {
         log('Error %O', error)
         return res.status(404).send('my fake not found')
     }
-
 }
 
 
@@ -149,7 +144,6 @@ async function put_position_status(req, res) {
  * @param {*} res
  */
 async function post_position(req, res) {
-    console.log('location %O %O', req.body)
     const position = new Position(req.body.fen)
     await position.connect()
     try {
@@ -159,7 +153,6 @@ async function post_position(req, res) {
         })
         res.status(200).send()
     } catch (error) {
-        console.log('Error %O', error)
         res.status(400).send(error.errmsg || error.message || error)
     }
 }
