@@ -10,10 +10,14 @@ types:
       multipv_goal?: multipv_goal
       priority: priority
       status: status
+      client: client
       analysis:
         type: array
         items: position_analysis
         uniqueItems: true
+  client:
+    type: string
+    description: The resker client triggering this action
   multipv_goal:
     type: integer
     minimum: 1
@@ -34,6 +38,7 @@ types:
     properties:
       engine_name: string
       score: number
+      client: client
       depth: integer
       multipv: integer
       best_move:

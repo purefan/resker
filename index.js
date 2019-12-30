@@ -19,6 +19,9 @@ function handler() {
         if (req.headers[ 'x-api-key' ] != process.env.X_API_KEY) {
             return res.status(401).send('Wrong api key.')
         }
+        if (!req.headers.resker_client || req.headers.resker_client == null || req.headers.resker_client.length < 5) {
+            return res.status(400).send('Invalid client')
+        }
 
         return next()
     }
@@ -27,6 +30,9 @@ function handler() {
 (async function () {
     if (!process.env.MONGO_HOST || process.env.MONGO_HOST.length < 5) {
         throw new Error('MONGO_HOST is not set')
+    }
+    if (!process.env.X_API_KEY || process.env.X_API_KEY.length < 5) {
+        throw new Error('X_API_KEY not set')
     }
     const path = join(__dirname, 'assets', 'api.raml')
     const security_definition = {
@@ -47,7 +53,7 @@ function handler() {
     app.get('/position', middleware, get_position)
     app.get('/position/analysis/queue', middleware, get_position_analysis_queue)
     app.get('/version', function get_version(req, res) {
-        res.status(200).send('0.7')
+        res.status(200).send('0.8')
     })
 
     // eslint-disable-next-line no-unused-vars
@@ -81,6 +87,7 @@ async function post_position_analysis(req, res) {
     log('req %O', req.route)
     try {
         const position = new Position(req.body.fen)
+        position.client = req.headers.client
         await position.add_eval(req.body)
         log('All good')
         return res.status(200).send()
@@ -145,11 +152,14 @@ async function put_position_status(req, res) {
  */
 async function post_position(req, res) {
     const position = new Position(req.body.fen)
+    position.client = req.headers.resker_client
+
     await position.connect()
     try {
         await position.add({
             depth_goal: req.body.depth_goal,
-            priority: req.body.priority
+            priority: req.body.priority,
+            multipv_goal: req.body.multipv_goal
         })
         res.status(200).send()
     } catch (error) {
