@@ -61,8 +61,11 @@ function handler() {
         const log = debug.extend('error_hander')
         log('error function \n%O --> %s', err, err.message)
         if (err.message && err.message.includes('Request failed to validate against RAML')) {
-            const body = { errors: err.requestErrors.map(failed => ({ field: failed.dataPath, message: failed.message })) }
+            const body = {
+                errors: err.requestErrors.map(failed => ({ field: failed.dataPath, message: failed.message }))
+            }
             log('Sending error to client %O', body)
+            log('request body:\n%O\nRequest headers:\n%O', req.body, req.headers)
             return res.status(400).send(body)
         }
         if (err.message && err.message.includes('Unsupported content-type')) {
