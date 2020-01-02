@@ -3,7 +3,7 @@ A backend for chess positions, games and collections.
 Please notice that by itself, this backend does nothing. You need a client to interact with this backend.
 
 ## Usage
-You can edit the config file `./config/production.js` and manually run the app yourself, but the easiest way is to just run `docker-compose up`.
+The easiest way is to just run `docker-compose up`.
 
 Resker by default listens on port 8001, but you can change this by passing the envvar HTTP_PORT when running docker-compose: `HTTP_PORT=8080 docker-compose up`
 
