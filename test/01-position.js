@@ -89,7 +89,6 @@ describe('1 - Position', function () {
                 })
                 .expect(200)
                 .expect(res => {
-                    console.log(res.body)
                     if (res.body.depth_goal != 30) throw new Error('Wrong depth')
                     if (res.body.multipv_goal != 4) throw new Error('Wrong multipv')
                     if (res.body.client != client) throw new Error('Wrong client')
@@ -180,6 +179,7 @@ describe('1 - Position', function () {
                     fen: position.pos4,
                     multipv: 1,
                     client,
+                    engine_name: '1.2.3',
                     // best_move is missing
                     depth: 40,
                     nodes: 3260129920,
@@ -208,7 +208,7 @@ describe('1 - Position', function () {
                     pv: 'd2d4 e5e4',
                     multipv: 1,
                     score: 1.2,
-                    engine_name: 'Migue 1.6'
+                    engine_name: 'Migue 1.2.4'
                 })
                 .expect(200)
         })
@@ -222,7 +222,7 @@ describe('1 - Position', function () {
                 .expect(200)
                 .expect(res => {
                     if (!res.body.analysis) throw new Error('Missing analysis')
-                    if (!res.body.analysis.find(x => x.engine_name == 'Migue 1.6')) throw new Error('Did not find 1.6 engine')
+                    if (!res.body.analysis.find(x => x.engine_name == 'Migue 1.2.4')) throw new Error('Did not find 1.2.4 engine')
                 })
         })
 
@@ -256,7 +256,7 @@ describe('1 - Position', function () {
                 .expect(200)
                 .expect(res => {
                     if (!res.body.analysis) throw new Error('Missing analysis')
-                    if (!res.body.analysis.find(x => x.engine_name == 'Migue 1.6')) throw new Error('Did not find 1.6 engine')
+                    if (!res.body.analysis.find(x => x.engine_name == 'Migue 1.2.4')) throw new Error('Did not find 1.2.4 engine')
                     if (!res.body.analysis.find(x => x.engine_name == 'Migue 1.8')) throw new Error('Did not find 1.8 engine')
                 })
         })
@@ -317,6 +317,52 @@ describe('1 - Position', function () {
                         if (res.body.analysis.find(x => x.extra_param)) throw new Error('Found extra param')
                     })
             })
+        })
+    })
+
+    describe('1.3 - Limits', function () {
+        it('1.3.1 - Max post size should be 15MB', function () {
+            return request
+                .post('/position/analysis')
+                .set({
+                    'resker_client': client,
+                    'x-api-key': api_key
+                })
+                .send({
+                    fen: position.pos4,
+                    best_move: 'd2d4',
+                    client,
+                    depth: 40,
+                    nodes: 3260129921,
+                    pv: 'd2d4 e5e4',
+                    multipv: 1,
+                    score: 1.2,
+                    engine_name: 'Migue 1.3.1',
+                    steps: [ '-'.repeat(1000000 * 15) ]
+                })
+                .expect(200)
+        })
+
+        it('1.3.2 - Max post size should be lower than 16MB', function () {
+            return request
+                .post('/position/analysis')
+                .set({
+                    'resker_client': client,
+                    'x-api-key': api_key
+                })
+                .send({
+                    fen: position.pos4,
+                    best_move: 'd2d4',
+                    client,
+                    depth: 40,
+                    nodes: 3260129921,
+                    pv: 'd2d4 e5e4',
+                    multipv: 1,
+                    score: 1.2,
+                    engine_name: 'Migue 1.3.2',
+                    steps: [ '-'.repeat(1000000 * 17) ]
+                })
+                .expect(413)
         })
     })
 })
