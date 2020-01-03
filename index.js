@@ -22,6 +22,7 @@ function handler() {
         if (!req.headers.resker_client || req.headers.resker_client == null || req.headers.resker_client.length < 5) {
             return res.status(400).send('Invalid client')
         }
+        debug('SecHandler %s %o', `${req.method} ${req.path}`, req.headers)
 
         return next()
     }
@@ -46,6 +47,9 @@ function handler() {
         rejectOnErrors: true,
         strict: true
     })
+    // Max mongodb document size is 15MB
+    app.use(express.json({ limit: '15mb' }))
+    app.use(express.urlencoded({ limit: '15mb', extended: true }))
     app.disable('x-powered-by')
     app.post('/position', middleware, post_position)
     app.post('/position/analysis', middleware, post_position_analysis)
@@ -65,12 +69,17 @@ function handler() {
                 errors: err.requestErrors.map(failed => ({ field: failed.dataPath, message: failed.message }))
             }
             log('Sending error to client %O', body)
-            log('request body:\n%O\nRequest headers:\n%O', req.body, req.headers)
+            log('%s request body:\n%O\nRequest headers:\n%O', `${req.method} ${req.path}`, req.body, req.headers)
             return res.status(400).send(body)
         }
         if (err.message && err.message.includes('Unsupported content-type')) {
             log('Unsupported content-type, probably forgot application/json')
             return res.status(400).send('Unsupported content-type')
+        }
+
+        if (err.message && err.message.includes('request entity too large')) {
+            log('Entity request too large')
+            return res.status(413)
         }
 
         log('Did not identify the type of error %O', Object.keys(err))
