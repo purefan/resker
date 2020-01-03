@@ -99,7 +99,7 @@ async function post_position_analysis(req, res) {
     log('req %O', req.route)
     try {
         const position = new Position(req.body.fen)
-        position.client = req.headers.client
+        position.client = req.headers.resker_client
         await position.add_eval(req.body)
         log('All good')
         return res.status(200).send()
