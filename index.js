@@ -96,7 +96,7 @@ function handler() {
  */
 async function post_position_analysis(req, res) {
     const log = debug.extend('post_position_analysis')
-    log('req %O', req.route)
+    log('req headers %O', req.headers)
     try {
         const position = new Position(req.body.fen)
         position.client = req.headers.resker_client
@@ -116,7 +116,7 @@ async function post_position_analysis(req, res) {
  * @param {*} res
  */
 async function get_position_analysis_queue(req, res) {
-    const log = debug.extend('get_position_ana...')
+    const log = debug.extend('get_position_analysis_queue')
     try {
         const position = new Position()
         const queued = await position.get_top_queued()
