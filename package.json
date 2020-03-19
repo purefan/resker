@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "nodemon --config nodemon.test.json",
+    "test": "nodemon --config ./assets/nodemon.test.json",
     "dev": "nodemon --config nodemon.dev.json",
     "serve": "DEBUG=resker node index.js"
   },
@@ -20,18 +20,19 @@
   "homepage": "https://gitlab.com/purefan/resker#readme",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "chess.js": "^0.10.2",
+    "chess.js": "^0.10.3",
     "debug": "^4.1.1",
     "express": "^4.17.1",
-    "express-validator": "^6.2.0",
-    "forever": "^1.0.0",
-    "mongodb": "^3.3.2",
+    "express-validator": "^6.4.0",
+    "mongodb": "^3.5.5",
     "osprey": "^0.5.4",
+    "osprey-middleware": "^0.4.3",
     "raml2obj": "^6.6.0"
   },
   "devDependencies": {
-    "nodemon": "^1.19.3",
-    "mocha": "^6.2.1",
+    "mocha": "^7.1.1",
+    "mongo-mock": "^4.0.0",
+    "nodemon": "^2.0.2",
     "supertest": "^4.0.2"
   }
 }
