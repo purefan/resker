@@ -1,0 +1,41 @@
+#%RAML 1.0 Library
+usage: These types are only used in the internal API.
+types:
+  client:
+    type: object
+    properties:
+      id: client_id
+      name: client_name
+      hash: string
+      salt: string
+      last_active: datetime
+      stats: client_stats
+      history: string[]
+      is_active: is_active
+    
+  is_active: boolean
+
+  active_client:
+    type: object
+    description: filtered fields to answer an api request
+    properties:
+      id: client_id
+      name: client_name
+      stats: client_stats
+  
+  client_id:
+    type: string
+    description: Unique identifier for a stocto client
+
+  client_name:
+    type: string
+    description: Name reported by the client, may clash, not guaranteed to be unique
+
+  client_stats:
+    type: object
+    properties:
+      total_ply_analyzed: integer
+      total_positions_analyzed: integer
+      average_time_per_ply:
+        description: in seconds
+        type: integer

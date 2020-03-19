@@ -1,5 +1,7 @@
 #%RAML 1.0 Library
 usage: These types relate to a Game.
+uses:
+  collection: collection.raml
 types:
   game:
     type: object
@@ -23,6 +25,7 @@ types:
       round: number
       raw: string
       game_date: date-only
+      collections: collection.collection[]
   game_move:
     type: object
     description: Represents a single move in a game

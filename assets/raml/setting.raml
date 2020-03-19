@@ -1,0 +1,10 @@
+#%RAML 1.0 Library
+usage: These types control the operation of resker.
+types:
+  setting:
+    type: object
+    properties:
+      serve_clients: serve_clients
+  serve_clients:
+    type: boolean
+    description: Used to serve new positions to stocto clients

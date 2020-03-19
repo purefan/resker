@@ -15,10 +15,30 @@ const position = {
 }
 
 
-const api_key = process.env.X_API_KEY || '374ct7n4c743n3c4'
+const api_key = process.env.X_API_KEY || '374ct7sn4c743n3c4'
 const client = `client tester ${Math.ceil(Math.random() * 99999)}`
 
 describe('0 - Access', function () {
+    before('Port must be set', async function () {
+        if (!process.env.HTTP_PORT) {
+            return Promise.reject('HTTP_PORT envvar not set')
+        }
+        return Promise.resolve()
+    })
+    const server = require('../server')
+    let app
+    before('Prepare express', async function () {
+        app = await server()
+        app.listen(process.env.HTTP_PORT, () => {
+        })
+    })
+
+    after('Cleanup', async function () {
+        const db = require('../lib/db')
+        const client = await db.connect()
+        client.close()
+    })
+
     it('0.1 - Requires a key', function () {
         return request
             .post('/position')
@@ -48,12 +68,13 @@ describe('0 - Access', function () {
             .set('x-api-key', api_key)
             .expect(200)
             .expect(res => {
-                if (res.text != '0.8') throw new Error('Version check failed')
+                if (res.text != '0.9') throw new Error('Version check failed')
             })
             .expect(res => {
                 if (res.headers[ 'x-powered-by' ]) throw new Error('x-powered-by is present')
             })
     })
+
     it('0.4 - client is required', function () {
         return request
             .get('/position/analysis/queue')
@@ -124,6 +145,22 @@ describe('1 - Position', function () {
                     if (res.body.multipv_goal != 5) throw new Error('Wrong multipv')
                 })
         })
+
+        it('1.1.5 - Fen must be valid', function () {
+            return request
+                .post('/position')
+                .set({
+                    'resker_client': client,
+                    'x-api-key': api_key
+                })
+                .send({
+                    fen: 'I made this up for 1.1.5',
+                    depth_goal: 40,
+                    multipv_goal: 4
+                })
+                .expect(400)
+                .expect(res => res.body == 'Invalid fen')
+        })
     })
 
     describe('1.2 - Analysis', function () {
@@ -161,7 +198,6 @@ describe('1 - Position', function () {
                 .set('resker_client', client)
                 .expect(200)
                 .expect(res => {
-                    console.log('res.body', res.body)
                     if (res.body.status != 1) {
                         throw new Error('Wrong status')
                     }

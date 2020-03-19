@@ -1,12 +1,14 @@
 #%RAML 1.0 Library
 usage: These types are only used in the internal API.
 types:
-
   player:
     type: object
     properties:
-      player_id: string
+      full_name: string
       max_elo: integer
       min_elo: integer
       average_elo: integer
       number_of_games: integer
+      openings:
+        type: object
+        description: the keys are the ECO code and the values are counters

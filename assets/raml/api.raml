@@ -15,9 +15,40 @@ securitySchemes:
         403:
           description: Invalid API Key
 uses:
-  private: type.raml
   game: game.raml
   position: position.raml
+  client: client.raml
+  setting: setting.raml
+
+
+/client:
+  /active:
+    get:
+      description: Gets clients active in the last 2 hours (some positions may take more than 1 hour)
+      securedBy: api_key
+      responses:
+        200:
+          body:
+            application/json:
+              type: client.client[]
+    /{id}:
+      get:
+        description: Gives statistics about a specific client
+        securedBy: api_key
+        responses:
+          200:
+            body: 
+              application/json: 
+                type: client.is_active
+
+/setting:
+  put:
+    description: Changes a limited number of operational settings
+    securedBy: api_key
+    body:
+      application/json:
+        type: setting.setting
+    
 
 /version:
   get:
@@ -69,29 +100,3 @@ uses:
       get:
         description: Get the next position in line to be analyzed
         securedBy: api_key
-/player/{player_name}:
-  get:
-    description: Gets the unique id of a player based on their name
-    securedBy: api_key
-    queryParameters:
-      player_name: string
-    responses:
-      200:
-        body:
-          application/json:
-            type: private.player
-/game:
-  post:
-    description: Adds a game to the database
-    securedBy: api_key
-    body:
-      application/json:
-        type: game.game
-    responses:
-      200:
-        description: All good
-  get:
-    description: Query the database to find one or more games
-    securedBy: api_key
-    queryString:
-      type: game.game_search

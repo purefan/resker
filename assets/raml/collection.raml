@@ -1,0 +1,11 @@
+#%RAML 1.0 Library
+usage: These types relate to a Group of Games, called Collection, or "database" in other programs.
+types:
+    collection:
+        type: object
+        properties:
+            name: string
+            tags?: tag_collection[]
+    tag_collection:
+        description: Tags help to filter and organize games and positions. Vogula suggests "repertoire", "white", "black"
+        type: string
