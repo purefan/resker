@@ -27,7 +27,8 @@ function handler() {
         if (req.body.fen && !chess.load(req.body.fen)) {
             return res.status(400).send({ errors: 'Invalid fen' })
         }
-        debug('SecHandler %s %o', `${req.method} ${req.path}`, req.headers)
+
+        debug('SecHandler %s %O', `${req.method} ${req.path}`, req.headers)
 
         return next()
     }

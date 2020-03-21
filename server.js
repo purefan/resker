@@ -60,10 +60,9 @@ async function prepare_raw() {
     app.use(express.json({ limit: '15mb' }))
     app.use(express.urlencoded({ limit: '15mb', extended: true }))
     app.disable('x-powered-by')
-    console.log('---> prepare going to middleware')
     app.use(osprey_middleware)
-    console.log('---> prepare after middleware')
     app.use(controller.position)
+    app.use(controller.client)
     app.use(error_handler)
 
     return app
@@ -79,8 +78,7 @@ async function prepare_raw() {
  */
 function error_handler(err, req, res) {
     const log = debug.extend('error_hander')
-    console.log('error function \n%O --> %s', err, err.message)
-    console.log('====> ERROR'.repeat(40))
+    log('Error function \n%O --> %s', err, err.message)
     if (err.message && err.message.includes('Request failed to validate against RAML')) {
         const body = {
             errors: err.requestErrors.map(failed => ({ field: failed.dataPath, message: failed.message }))

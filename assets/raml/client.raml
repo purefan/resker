@@ -5,14 +5,14 @@ types:
     type: object
     properties:
       id: client_id
-      name: client_name
+      client_name: client_name
       hash: string
       salt: string
       last_active: datetime
       stats: client_stats
       history: string[]
       is_active: is_active
-    
+
   is_active: boolean
 
   active_client:
@@ -20,9 +20,9 @@ types:
     description: filtered fields to answer an api request
     properties:
       id: client_id
-      name: client_name
+      client_name: client_name
       stats: client_stats
-  
+
   client_id:
     type: string
     description: Unique identifier for a stocto client

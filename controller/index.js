@@ -1,4 +1,5 @@
 module.exports = {
     stat: require('./stat'),
-    position: require('./position')
+    position: require('./position'),
+    client: require('./client')
 }

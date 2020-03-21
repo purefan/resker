@@ -37,9 +37,10 @@ uses:
         securedBy: api_key
         responses:
           200:
-            body: 
-              application/json: 
+            body:
+              application/json:
                 type: client.is_active
+
 
 /setting:
   put:
@@ -48,7 +49,6 @@ uses:
     body:
       application/json:
         type: setting.setting
-    
 
 /version:
   get:
@@ -59,6 +59,9 @@ uses:
     put:
       description: Changes the status of a position. 0:New position; 1:Being analyzed; 2:Fully analyzed
       securedBy: api_key
+      headers:
+        resker_client:
+          type: string
       body:
         application/json:
           type: position.update_status
@@ -67,12 +70,12 @@ uses:
     securedBy: api_key
     headers:
       resker_client:
-        description: String
+        type: string
     body:
       application/json:
         type: position.position_new
   get:
-    description: Fetches a position along with its available analyzes
+    description: Fetches a position along with its available analysis
     securedBy: api_key
     headers:
       fen:
@@ -87,12 +90,12 @@ uses:
     post:
       description: Adds an analysis to this position
       securedBy: api_key
+      headers:
+        resker_client:
+          type: string
       body:
         application/json:
           type: position.position_analysis
-      headers:
-        resker_client:
-          description: String
       responses:
         200:
           description: All good
