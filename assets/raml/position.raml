@@ -10,12 +10,12 @@ types:
       multipv_goal?: multipv_goal
       priority: priority
       status: status
-      client: client
+      client_name: client_name
       analysis:
         type: array
         items: position_analysis
         uniqueItems: true
-  client:
+  client_name:
     type: string
     description: The resker client triggering this action
   multipv_goal:
