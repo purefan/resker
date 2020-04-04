@@ -29,9 +29,11 @@ async function post_position_analysis(req, res) {
             analysis: req.body
         })
         log('All good')
-        res.status(200).send()
+
         // Update client
-        model.client.set_last_active({ client_name: req.headers.resker_client })
+        const client_model = await model.client()
+        await client_model.set_last_active({ client_name: req.headers.resker_client })
+        res.status(200).send()
     } catch (error) {
         log('Error %O', error)
         return res.status(404).send('my fake not found')
@@ -87,7 +89,7 @@ async function put_position_status(req, res) {
             client: req.headers.resker_client,
             status: req.body.status
         }
-        log('Updating', req, req.header('resker_client'))
+        log('Updating', req.header('resker_client'))
         await position.set_status(to_update)
 
         const client = await model.client()

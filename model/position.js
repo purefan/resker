@@ -2,10 +2,13 @@ const debug = require('debug')('resker:model:position')
 const db = require('../lib/db')
 
 /**
- *
+ * @typedef {Object} Position
+ * @description Object as represented in the db that stores information about a specific position
+ * @property {Client} client
  */
 async function Position() {
     const db_conn = await db.connect()
+    const collection = db_conn.collection('position')
 
     /**
      * Fetches param.fen from the database
@@ -18,7 +21,7 @@ async function Position() {
         if (!param.fen) {
             throw new Error('fen is required')
         }
-        return await db_conn.collection('position').findOne({ _id: param.fen })
+        return await collection.findOne({ _id: param.fen })
     }
 
     /**
@@ -39,7 +42,7 @@ async function Position() {
             }
         }
         log('Updating because it already existed %O', update_params)
-        await db_conn.collection('position').updateOne(
+        await collection.updateOne(
             { _id: param.fen },
             update_params)
         log('Edited the position')
@@ -63,12 +66,12 @@ async function Position() {
             } // Adding $set here would make this an update instead of an insert
         }
         log('Inserting %O', insert_query)
-        await db_conn.collection('position').updateOne(
+        await collection.updateOne(
             { _id: params.fen },
             insert_query,
             { upsert: true }
         )
-        log('Checking %O', await db_conn.collection('position').toJSON())
+        log('Checking %O', await fetch(params))
         log('Added position')
     }
 
@@ -78,7 +81,7 @@ async function Position() {
     async function get_top_queued() {
         const log = debug.extend('get_top_queued')
         log('Fetching')
-        const position = await db_conn.collection('position')
+        const position = await collection
             .find({ status: 0 })
             .sort({ priority: -1 })
             .limit(1)
@@ -123,7 +126,7 @@ async function Position() {
                 updated: Date.now()
             }
         }
-        await db_conn.collection('position').updateOne(
+        await collection.updateOne(
             { _id: param.fen },
             update_params
         )
@@ -150,7 +153,7 @@ async function Position() {
             update_params.$set.status = 2
         }
         log('Update params: %s', JSON.stringify(param.analysis).substr(0, 300))
-        await db_conn.collection('position')
+        await collection
             .updateOne(
                 { _id: param.fen },
                 update_params)

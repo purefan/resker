@@ -20,8 +20,24 @@ uses:
   client: client.raml
   setting: setting.raml
 
-
 /client:
+  post:
+    description: Creates a new stocto client
+    securedBy: api_key
+    body:
+      application/json:
+        type: object
+        properties:
+          client_name: client.client_name
+          api_key: client.x_api_key
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            properties:
+              id: string
+              last_active: client.last_active
   /active:
     get:
       description: Gets clients active in the last 2 hours (some positions may take more than 1 hour)
@@ -31,15 +47,28 @@ uses:
           body:
             application/json:
               type: client.client[]
-    /{id}:
-      get:
-        description: Gives statistics about a specific client
-        securedBy: api_key
-        responses:
-          200:
-            body:
-              application/json:
-                type: client.is_active
+  /{id}:
+    get:
+      description: Gives statistics about a specific client
+      securedBy: api_key
+      responses:
+        200:
+          body:
+            application/json:
+              type: object
+              properties:
+                is_active: client.is_active
+                last_active: client.last_active
+    put:
+      description: Sets specific configuration values for a client
+      securedBy: api_key
+      body:
+        application/json:
+          type: object
+          properties:
+            is_active:
+              type: client.is_active
+              required: true
 
 
 /setting:
@@ -103,3 +132,11 @@ uses:
       get:
         description: Get the next position in line to be analyzed
         securedBy: api_key
+        responses:
+          200:
+            description: Found at least one position
+            body:
+              application/json:
+                type: position.position
+          400:
+            description: No position found

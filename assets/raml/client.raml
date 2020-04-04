@@ -8,12 +8,21 @@ types:
       client_name: client_name
       hash: string
       salt: string
-      last_active: datetime
+      last_active: last_active
       stats: client_stats
       history: string[]
       is_active: is_active
 
   is_active: boolean
+
+  last_active:
+    type: datetime
+    description: When did the client last do something
+
+  x_api_key:
+    type: string
+    description: Long and secure key
+    minLength: 10
 
   active_client:
     type: object

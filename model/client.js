@@ -2,8 +2,14 @@ const debug = require('debug')('resker:model:client')
 const db = require('../lib/db')
 
 /**
- *
+ * @typedef {Object} Client
+ * @description Object as stored in the db holding information about a client
+ * @property {String} _id Auto-generated id by mongodb
  */
+
+/**
+  * Utility functions to interact with Client objects in the database
+  */
 async function Client() {
     const db_conn = await db.connect()
     const collection = db_conn.collection('stocto_client')
@@ -12,9 +18,29 @@ async function Client() {
      * Adds a client to the collection
      * @param {Object} param
      * @param {String} param.client_name
+     * @param {String} param.hash
+     * @return {Object} {id: <String>}
      */
     async function add_client(param) {
-
+        const log = debug.extend('add_client')
+        if (typeof param.hash != 'string' || param.hash.length < 5) {
+            throw new Error('Client must have an api key')
+        }
+        log('params: %O', param)
+        await collection.createIndex({ client_name: 1 })
+        log('ready')
+        const insert_param = {
+            client_name: param.client_name,
+            hash: param.hash,
+            last_active: Date.now(),
+            is_active: true
+        }
+        const res = await collection.insertOne(insert_param)
+        log('res', res.result)
+        log('insert_param', insert_param)
+        const confirm = await collection.findOne({ client_name: param.client_name })
+        log('Confirm', confirm)
+        return fix_id(confirm)
     }
 
     /**
@@ -48,7 +74,7 @@ async function Client() {
         const log = debug.extend('fetch_all_clients')
         log('Fetching all clients')
         const clients = (await (await collection.find({})).toArray()).map(fix_id)
-        log('Fetched', clients, Array.isArray(clients))
+        log('Fetched\n%O', clients)
         return clients
     }
 
@@ -88,12 +114,39 @@ async function Client() {
      * @param {Object} client
      */
     function fix_id(client) {
-        return Object.assign({}, client, { id: client._id, _id: undefined })
+        const log = debug.extend('fix_id')
+        log('Fixing ', client)
+        let fixed = Object.assign({}, { id: client._id }, client)
+        delete fixed._id
+        return fixed
     }
 
+    /**
+     *
+     * @param {Object} param
+     * @param {Boolean} param.is_active
+     * @param {String} param.id
+     */
+    function set_client_active(param) {
+        return collection.update(
+            { _id: param.id },
+            { is_active: !!param.is_active },
+            { upsert: true })
+    }
+
+    /**
+     *
+     * @param {*} id
+     */
+    function fetch_client_by_id(id) {
+        return collection.find({ _id: id })
+    }
     return {
         fetch_all_clients,
-        set_last_active
+        set_last_active,
+        add_client,
+        set_client_active,
+        fetch_client_by_id
     }
 }
 
