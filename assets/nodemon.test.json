@@ -2,6 +2,7 @@
     "verbose": true,
     "watch": [
         "test/*.js",
+        "controller/*.js",
         "nodemon.test.json",
         "config/development.js",
         "assets/nodemon.test.json",
@@ -11,10 +12,10 @@
     ],
     "env": {
         "NODE_ENV": "development",
-        "X_API_KEY": "12345678",
+        "X_API_KEY": "123456789012",
         "MONGO_HOST": "localhost",
         "HTTP_PORT": 8011,
-        "DEBUG": "*"
+        "DEBUG": ""
     },
     "exec": "clear && mocha --timeout 65000 --colors --bail \"./test/*.js\""
 }

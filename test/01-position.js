@@ -1,97 +1,30 @@
 const supertest = require('supertest')
 const request = supertest(`localhost:${process.env.HTTP_PORT}`)
+const server = require('./server')
+const mock = require('./mock')
 
-/**
- * Generates the same position from position[0] with a random ply since last capture
- */
-function gen_fen() { return `r2q1k1r/p2p1pp1/2n4p/2pQP1b1/2N5/2N5/PP3PPP/R3K2R w KQ - 1 ${Math.ceil(Math.random() * 9999)}` }
 
 const position = {
-    pos1: gen_fen(),
-    pos2: gen_fen(),
-    pos3: gen_fen(),
-    pos4: gen_fen(),
-    pos5: gen_fen()
+    pos1: mock.gen_fen(),
+    pos2: mock.gen_fen(),
+    pos3: mock.gen_fen(),
+    pos4: mock.gen_fen(),
+    pos5: mock.gen_fen()
 }
 
-
-const api_key = process.env.X_API_KEY || '374ct7sn4c743n3c4'
-const client = `client tester ${Math.ceil(Math.random() * 99999)}`
-
-describe('0 - Access', function () {
-    before('Port must be set', async function () {
-        if (!process.env.HTTP_PORT) {
-            return Promise.reject('HTTP_PORT envvar not set')
-        }
-        return Promise.resolve()
-    })
-    const server = require('../server')
-    let app
-    before('Prepare express', async function () {
-        app = await server()
-        app.listen(process.env.HTTP_PORT, () => {
-        })
-    })
-
-    after('Cleanup', async function () {
-        const db = require('../lib/db')
-        const client = await db.connect()
-        client.close()
-    })
-
-    it('0.1 - Requires a key', function () {
-        return request
-            .post('/position')
-            .set('resker_client', client)
-            .send({
-                fen: position.pos1,
-                depth_goal: 40,
-                priority: 10
-            })
-            .expect(401)
-    })
-
-    it('0.2 - Only the correct key works', function () {
-        return request
-            .get('/position/analysis/queue')
-            .set({
-                'x-api-key': Math.ceil(Math.random() * 999), // Random key that should not be valid
-                client
-            })
-            .expect(401)
-    })
-
-    it('0.3 - Version and x-powered-by check', function () {
-        return request
-            .get('/version')
-            .set('resker_client', client)
-            .set('x-api-key', api_key)
-            .expect(200)
-            .expect(res => {
-                if (res.text != '0.9') throw new Error('Version check failed')
-            })
-            .expect(res => {
-                if (res.headers[ 'x-powered-by' ]) throw new Error('x-powered-by is present')
-            })
-    })
-
-    it('0.4 - client is required', function () {
-        return request
-            .get('/position/analysis/queue')
-            .set('x-api-key', api_key)
-            .expect(400) // should fail because no client
-    })
-})
+const headers = {
+    resker_client: `client tester ${Math.ceil(Math.random() * 99999)}`,
+    'x-api-key': process.env.X_API_KEY || '374ct7sn4c743n3c4'
+}
+const client = headers.resker_client
 
 describe('1 - Position', function () {
+    before('Make sure express is running', server)
     describe('1.1 - Queue', function () {
         it('1.1.1 - Queue position', function () {
             return request
                 .post('/position')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos2,
                     depth_goal: 30,
@@ -104,10 +37,7 @@ describe('1 - Position', function () {
         it('1.1.2 - Get top queued position', function () {
             return request
                 .get('/position/analysis/queue')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .expect(200)
                 .expect(res => {
                     if (res.body.depth_goal != 30) throw new Error('Wrong depth')
@@ -119,10 +49,7 @@ describe('1 - Position', function () {
         it('1.1.3 - Store position with higher depth goal and multipv', function () {
             return request
                 .post('/position')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos2,
                     depth_goal: 40,
@@ -135,9 +62,9 @@ describe('1 - Position', function () {
         it('1.1.4 - Confirm position has the highest values', function () {
             return request
                 .get('/position')
-                .set('x-api-key', api_key)
+                .set(headers)
                 .set('fen', position.pos2)
-                .set('resker_client', client)
+                .set('client_name', client)
                 .expect(200)
                 .expect(res => {
                     if (res.body.depth_goal != 40) throw new Error('Wrong position depth')
@@ -149,10 +76,7 @@ describe('1 - Position', function () {
         it('1.1.5 - Fen must be valid', function () {
             return request
                 .post('/position')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: 'I made this up for 1.1.5',
                     depth_goal: 40,
@@ -167,10 +91,7 @@ describe('1 - Position', function () {
         before('1.2.0 - Queue position', function () {
             return request
                 .post('/position')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos4,
                     depth_goal: 120,
@@ -182,10 +103,7 @@ describe('1 - Position', function () {
         it('1.2.1 - Start an analysis', function () {
             return request
                 .put('/position/status')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({ status: 1, fen: position.pos4 })
                 .expect(200)
         })
@@ -193,9 +111,9 @@ describe('1 - Position', function () {
         it('1.2.2 - Position has correct status', function () {
             return request
                 .get('/position')
-                .set('x-api-key', api_key)
+                .set(headers)
                 .set('fen', position.pos4)
-                .set('resker_client', client)
+                .set('client_name', client)
                 .expect(200)
                 .expect(res => {
                     if (res.body.status != 1) {
@@ -207,10 +125,7 @@ describe('1 - Position', function () {
         it('1.2.3 - Store incomplete analysis', function () {
             return request
                 .post('/position/analysis')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos4,
                     multipv: 1,
@@ -231,10 +146,7 @@ describe('1 - Position', function () {
         it('1.2.4 - Store complete analysis', function () {
             return request
                 .post('/position/analysis')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos4,
                     best_move: 'd2d4',
@@ -252,9 +164,9 @@ describe('1 - Position', function () {
         it('1.2.5 - Confirm the analysis was stored', function () {
             return request
                 .get('/position')
-                .set('x-api-key', api_key)
+                .set(headers)
                 .set('fen', position.pos4)
-                .set('resker_client', client)
+                .set('client_name', client)
                 .expect(200)
                 .expect(res => {
                     if (!res.body.analysis) throw new Error('Missing analysis')
@@ -265,10 +177,7 @@ describe('1 - Position', function () {
         it('1.2.6 - Add second analysis', function () {
             return request
                 .post('/position/analysis')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos4,
                     best_move: 'd2d5',
@@ -286,9 +195,9 @@ describe('1 - Position', function () {
         it('1.2.7 - Confirm that both analysis were stored', function () {
             return request
                 .get('/position')
-                .set('x-api-key', api_key)
+                .set(headers)
                 .set('fen', position.pos4)
-                .set('resker_client', client)
+                .set('client_name', client)
                 .expect(200)
                 .expect(res => {
                     if (!res.body.analysis) throw new Error('Missing analysis')
@@ -300,10 +209,7 @@ describe('1 - Position', function () {
         it('1.2.8 - Try to insert analysis for a new position', function () {
             return request
                 .post('/position/analysis')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: 'r2q1k1r/p2p1pp1/2n4p/2pQP1b1/2N5/2N5/PP3PPP/R3K2R w KQ - 2 16',
                     best_move: 'd2d5',
@@ -322,10 +228,7 @@ describe('1 - Position', function () {
             before('Prepare', function () {
                 return request
                     .post('/position/analysis')
-                    .set({
-                        'resker_client': client,
-                        'x-api-key': api_key
-                    })
+                    .set(headers)
                     .send({
                         fen: 'r2q1k1r/p2p1pp1/2n4p/2pQP1b1/2N5/2N5/PP3PPP/R3K2R w KQ - 2 16',
                         best_move: 'd2d5',
@@ -344,9 +247,9 @@ describe('1 - Position', function () {
             it('1.2.9 - Confirm', function () {
                 return request
                     .get('/position')
-                    .set('x-api-key', api_key)
+                    .set(headers)
                     .set('fen', position.pos4)
-                    .set('resker_client', client)
+                    .set('client_name', client)
                     .expect(200)
                     .expect(res => {
                         if (!res.body.analysis) throw new Error('Missing analysis')
@@ -360,10 +263,7 @@ describe('1 - Position', function () {
         it('1.3.1 - Max post size should be 15MB', function () {
             return request
                 .post('/position/analysis')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos4,
                     best_move: 'd2d4',
@@ -382,10 +282,7 @@ describe('1 - Position', function () {
         it('1.3.2 - Max post size should be lower than 16MB', function () {
             return request
                 .post('/position/analysis')
-                .set({
-                    'resker_client': client,
-                    'x-api-key': api_key
-                })
+                .set(headers)
                 .send({
                     fen: position.pos4,
                     best_move: 'd2d4',
