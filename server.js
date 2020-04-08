@@ -63,6 +63,7 @@ async function prepare_raw() {
     app.use(osprey_middleware)
     app.use(controller.position)
     app.use(controller.client)
+    app.use(controller.stat)
     app.use(error_handler)
 
     return app

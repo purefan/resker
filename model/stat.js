@@ -1,9 +1,12 @@
-const db = require('../lib/db').connect()
+const db = require('../lib/db')
 
 exports.fetch = async () => {
+    const db_conn = await db.connect()
+    const collection = db_conn.collection('position')
+
     return {
-        new: db.collection('position').count({ status: 0 }),
-        in_process: db.collection('position').count({ status: 1 }),
-        completed: db.collection('position').count({ status: 2 })
+        to_do: await collection.count({ status: 0 }),
+        processing: await collection.count({ status: 1 }),
+        completed: await collection.count({ status: 2 })
     }
 }
