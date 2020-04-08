@@ -15,10 +15,11 @@ securitySchemes:
         403:
           description: Invalid API Key
 uses:
+  client: client.raml
   game: game.raml
   position: position.raml
-  client: client.raml
   setting: setting.raml
+  stats: stats.raml
 
 /client:
   post:
@@ -79,9 +80,23 @@ uses:
       application/json:
         type: setting.setting
 
-/version:
+/stats:
   get:
-    description: Gives the current version
+    description: Generates performance and historical statistics
+    securedBy: api_key
+    responses:
+      200:
+        body:
+          application/json:
+            type: object
+            properties:
+              positions:
+                type: object
+                properties:
+                  to_do: stats.positions_to_do
+                  processing: stats.positions_processing
+                  completed: stats.positions_completed
+
 
 /position:
   /status:
