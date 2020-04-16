@@ -42,9 +42,9 @@ async function post_position_analysis(req, res) {
 
 
 /**
- *
- * @param {*} req
- * @param {*} res
+ * Coordinates serving the top queued position for analysis
+ * @param {Express.Request} req
+ * @param {Express.Response} res
  */
 async function get_position_analysis_queue(req, res) {
     const log = debug.extend('get_position_analysis_queue')
@@ -52,7 +52,10 @@ async function get_position_analysis_queue(req, res) {
         const position = await model.position()
         const queued = await position.get_top_queued()
         log('Queued %O', queued)
-        return res.status(200).send(queued)
+        return res
+            .status(200)
+            .set('cache-control', `public, max-age=${60 * 5}`)
+            .send(queued)
     } catch (error) {
         log('Error', error)
         return res.status(error.status_code || 400).send(error.message || '')
@@ -69,9 +72,15 @@ async function get_position(req, res) {
     log('Getting Position %O', req.headers)
     const pos_model = await model.position()
     const position = await pos_model.fetch({ fen: req.headers.fen })
-    // const body = await position.fetch()
-    log('%O', position)
-    return res.status(200).send(position)
+
+    let cache_ttl = 60 * 5 // 5 minutes
+    if (position.status == 2) {
+        cache_ttl = 60 * 60 * 24 // 1 day because its already done
+    }
+    return res
+        .set('cache-control', `public, max-age=${cache_ttl}`)
+        .status(200)
+        .send(position)
 }
 
 /**
