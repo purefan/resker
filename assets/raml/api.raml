@@ -126,6 +126,9 @@ uses:
         description: The fen string to find
     responses:
       200:
+        headers:
+          Cache-Control:
+            required: true
         body:
           application/json:
             type: position.position
@@ -150,6 +153,9 @@ uses:
         responses:
           200:
             description: Found at least one position
+            headers:
+              Cache-Control:
+                required: true
             body:
               application/json:
                 type: position.position
