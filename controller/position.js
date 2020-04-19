@@ -69,19 +69,24 @@ async function get_position_analysis_queue(req, res) {
  */
 async function get_position(req, res) {
     const log = debug.extend('get_position')
-    log('Getting Position %O', req.headers)
-    const pos_model = await model.position()
-    const position = await pos_model.fetch({ fen: req.headers.fen })
-    log('The position found is %O', position)
-    let cache_ttl = 60 * 5 // 5 minutes
-    if (position.status == 2) {
-        cache_ttl = 60 * 60 * 24 // 1 day because its already done
+    try {
+        log('Getting Position %O', req.headers)
+        const pos_model = await model.position()
+        const position = await pos_model.fetch({ fen: req.headers.fen })
+        log('The position found is %O', position)
+        let cache_ttl = 60 * 5 // 5 minutes
+        if (position.status == 2) {
+            cache_ttl = 60 * 60 * 24 // 1 day because its already done
+        }
+        log(`The cache_ttl is ${cache_ttl}`)
+        return res
+            .set('cache-control', `public, max-age=${cache_ttl}`)
+            .status(200)
+            .send(position)
+    } catch (error) {
+        log('Error', error)
+        res.status(404).send()
     }
-    log(`The cache_ttl is ${cache_ttl}`)
-    return res
-        .set('cache-control', `public, max-age=${cache_ttl}`)
-        .status(200)
-        .send(position)
 }
 
 /**
