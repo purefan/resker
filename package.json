@@ -29,7 +29,8 @@
     "mongodb": "^3.5.5",
     "osprey": "^0.5.4",
     "osprey-middleware": "^0.4.3",
-    "raml2obj": "^6.6.0"
+    "raml2obj": "^6.6.0",
+    "resker-debug": "file:lib/debug"
   },
   "devDependencies": {
     "mocha": "^7.1.1",

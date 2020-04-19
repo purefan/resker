@@ -1,4 +1,4 @@
-const debug = require('debug')('resker:middleware:auth')
+const debug = require('resker-debug')('resker:middleware:auth')
 const { Chess } = require('chess.js')
 const chess = new Chess()
 

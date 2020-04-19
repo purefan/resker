@@ -1,4 +1,4 @@
-const debug = require('debug')('resker:model:position')
+const debug = require('resker-debug')('resker:model:position')
 const db = require('../lib/db')
 
 /**

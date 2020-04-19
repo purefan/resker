@@ -1,0 +1,14 @@
+{
+  "name": "resker-debug",
+  "version": "1.0.0",
+  "description": "Wrapper around debug to also store in file",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "purefan",
+  "license": "ISC",
+  "dependencies": {
+    "debug": "^4.1.1"
+  }
+}
