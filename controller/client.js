@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const model = require('../model')
-const debug = require('debug')('resker:controller:client')
+const debug = require('resker-debug')('resker:controller:client')
 const auth = require('../middleware/auth')
 
 router.get('/client/active', get_active_client)

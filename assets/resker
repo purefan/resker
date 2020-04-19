@@ -1,0 +1,7 @@
+/usr/src/app/assets/logs/*.log {
+    daily
+    missingok
+    maxage 7
+    rotate 7
+    size 10M
+}

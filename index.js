@@ -1,5 +1,5 @@
 const server = require('./server')
-const debug = require('debug')('resker:main')
+const debug = require('resker-debug')('resker:main')
 const port = process.env.HTTP_PORT || 8001
 
 server().then(app => {

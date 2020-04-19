@@ -1,6 +1,6 @@
 const router = require('express').Router()
 const model = require('../model')
-const debug = require('debug')('resker:controller:position')
+const debug = require('resker-debug')('resker:controller:position')
 
 router.post('/position', post_position)
 router.post('/position/analysis', post_position_analysis)
@@ -72,11 +72,12 @@ async function get_position(req, res) {
     log('Getting Position %O', req.headers)
     const pos_model = await model.position()
     const position = await pos_model.fetch({ fen: req.headers.fen })
-
+    log('The position found is %O', position)
     let cache_ttl = 60 * 5 // 5 minutes
     if (position.status == 2) {
         cache_ttl = 60 * 60 * 24 // 1 day because its already done
     }
+    log(`The cache_ttl is ${cache_ttl}`)
     return res
         .set('cache-control', `public, max-age=${cache_ttl}`)
         .status(200)
