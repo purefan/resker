@@ -12,6 +12,9 @@ RUN apt-get update && apt-get install logrotate -y
 COPY ./assets/resker /etc/logrotate.d/resker
 RUN chmod 644 /etc/logrotate.d/resker
 
+RUN mkdir -p /usr/src/app/assets/logs/
+RUN touch /usr/src/app/assets/logs/resker.log
+
 RUN yarn install
 
 # Bundle app source
