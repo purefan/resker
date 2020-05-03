@@ -79,6 +79,9 @@ describe('3 - Client', function () {
                     .set(TestUtils.clients_manager.get(311).get('headers'))
                     .expect(200)
                     .then(res => {
+                        if (!res.body.client_name) {
+                            throw new Error('Did not store the clients name')
+                        }
                         if (TestUtils.clients_manager.get(311).get('last_active') >= res.body.last_active) {
                             throw new Error('Did not update the last_active value')
                         }

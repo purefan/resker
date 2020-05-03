@@ -22,6 +22,7 @@ async function get_client(req, res) {
     log('Found', fetched_client)
     res.status(200).send({
         is_active: fetched_client.is_active,
+        client_name: fetched_client.client_name,
         last_active: fetched_client.last_active
     })
 }

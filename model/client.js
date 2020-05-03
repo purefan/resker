@@ -61,7 +61,10 @@ async function Client() {
         log('Setting client "%s" last active to %d', param.client_name, now)
         await collection.update(
             { client_name: param.client_name },
-            { last_active: now },
+            {
+                last_active: now,
+                client_name: param.client_name
+            },
             { upsert: true })
         log('Checking', await fetch_client(param))
         return true
