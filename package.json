@@ -6,7 +6,8 @@
   "scripts": {
     "test": "nodemon --config ./assets/nodemon.test.json",
     "dev": "nodemon --config nodemon.dev.json",
-    "serve": "DEBUG=resker node index.js"
+    "serve": "DEBUG=resker node index.js",
+    "start": "forever -a -w -l forever.log -o stdout.log -e stderr.log index.js"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
     "debug": "^4.1.1",
     "express": "^4.17.1",
     "express-validator": "^6.4.0",
+    "forever": "^3.0.0",
     "mongodb": "^3.5.5",
     "osprey": "^0.5.4",
     "osprey-middleware": "^0.4.3",
