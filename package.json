@@ -7,7 +7,7 @@
     "test": "nodemon --config ./assets/nodemon.test.json",
     "dev": "nodemon --config nodemon.dev.json",
     "serve": "DEBUG=resker node index.js",
-    "start": "forever -a -w -l forever.log -o stdout.log -e stderr.log index.js"
+    "start": "forever -a -l forever.log -o stdout.log -e stderr.log index.js"
   },
   "repository": {
     "type": "git",
