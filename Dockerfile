@@ -8,7 +8,8 @@ WORKDIR /usr/src/app
 COPY . .
 
 # node is built on debian stretch without logrotate
-RUN apt-get update && apt-get install logrotate forever -y
+RUN npm install -g forever
+RUN apt-get update && apt-get install logrotate -y
 COPY ./assets/resker /etc/logrotate.d/resker
 RUN chmod 644 /etc/logrotate.d/resker
 
