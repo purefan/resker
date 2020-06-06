@@ -33,11 +33,11 @@ async function Position() {
         log('Updating position: %O', param)
         const update_params = {
             $set: {
-                depth_goal: Math.max(param.depth_goal || 0, param.existing.depth_goal),
-                multipv_goal: Math.max(param.multipv_goal || 4, param.existing.multipv_goal),
-                status: param.status || 0, // reset so it gets picked up again
-                priority: Math.max(param.priority || 0, param.existing.priority),
-                client: param.client || param.existing.client,
+                depth_goal: Math.max(parseInt(param.depth_goal) || 35, parseInt(param.existing.depth_goal)),
+                multipv_goal: Math.max(parseInt(param.multipv_goal) || 4, parseInt(param.existing.multipv_goal)),
+                status: parseInt(param.status) || 0, // reset so it gets picked up again
+                priority: Math.max(parseInt(param.priority) || 30, parseInt(param.existing.priority)),
+                client: param.client || param.existing.client || 'unkown',
                 updated: Date.now()
             }
         }
