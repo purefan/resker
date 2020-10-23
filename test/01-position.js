@@ -85,6 +85,74 @@ describe('1 - Position', function () {
                 .expect(400)
                 .expect(res => res.body == 'Invalid fen')
         })
+
+        describe('1.1.6 - Avoid abandoning a position', function() {
+            const pos1 = mock.gen_fen()
+            const pos2 = mock.gen_fen()
+            before('Book the positions', async function() {
+                console.log(Test())
+                await Test().clean_mock_mongo()
+                await request
+                    .post('/position')
+                    .set(headers)
+                    .send({
+                        fen: pos1,
+                        depth_goal:22,
+                        multipv_goal: 2,
+                        priority:1
+                    })
+
+                await request
+                    .post('/position')
+                    .set(headers)
+                    .send({
+                        fen: pos2,
+                        depth_goal:32,
+                        multipv_goal: 4,
+                        priority:2
+                    })
+            })
+
+            before('Get one position', async function () {
+                return request
+                    .get('/position/analysis/queue')
+                    .set(headers)
+                    .expect(200)
+                    .expect(res => {
+                        if (res.body.priority != 2) throw new Error('Wrong position, its not the highest prio')
+                    })
+            })
+
+            before('Start an analysis', async function () {
+                return request
+                    .put('/position/status')
+                    .set(headers)
+                    .send({ status: 1, fen: pos2 })
+                    .expect(200)
+            })
+
+            before('Add a higher prio position', async function () {
+                await request
+                    .post('/position')
+                    .set(headers)
+                    .send({
+                        fen: mock.gen_fen(),
+                        depth_goal:32,
+                        multipv_goal: 4,
+                        priority:3
+                    })
+            })
+
+            it('Requesting the top position', async function () {
+                return request
+                    .get('/position/analysis/queue')
+                    .set(headers)
+                    .expect(200)
+                    .expect(res => {
+                        if (res.body.priority != 2) throw new Error('Wrong position, its not the highest prio')
+                    })
+            })
+        })
     })
 
     describe('1.2 - Analysis', function () {

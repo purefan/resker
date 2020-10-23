@@ -123,6 +123,8 @@ uses:
     description: Fetches a position along with its available analysis
     securedBy: api_key
     headers:
+      resker_client:
+        type: string
       fen:
         description: The fen string to find
     responses:

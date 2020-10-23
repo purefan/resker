@@ -1,5 +1,6 @@
 const debug = require('resker-debug')('resker:model:position')
 const db = require('../lib/db')
+const error = require('../lib/error')
 
 /**
  * @typedef {Object} Position
@@ -9,6 +10,11 @@ const db = require('../lib/db')
 async function Position() {
     const db_conn = await db.connect()
     const collection = db_conn.collection('position')
+    const STATUS = {
+        TO_DO: 0,
+        IN_PROGRESS: 1,
+        DONE: 2
+    }
 
     /**
      * Fetches param.fen from the database
@@ -50,7 +56,7 @@ async function Position() {
 
     /**
      *
-     * @param {*} param
+     * @param {Object} params
      */
     async function insert(params) {
         const log = debug.extend('insert')
@@ -76,6 +82,23 @@ async function Position() {
     }
 
     /**
+     * Fetches at most 50 positions by their status
+     * @todo implement pagination
+     * @param {Number} status
+     * @returns {Promise<Array<Object>>}
+     */
+    async function get_positions_by_status(status) {
+        const log = debug.extend('get_positions_by_status')
+        console.log('Fetching with status ', status)
+        const dataset = await collection
+            .find({status})
+            .limit(50)
+        const positions = await db.to_array(dataset)
+        log('Found', positions)
+        return positions
+    }
+
+    /**
      *
      */
     async function get_top_queued() {
@@ -83,13 +106,13 @@ async function Position() {
         log('Fetching')
         const position = await collection
             .find({ status: 0 })
-            .sort({ priority: -1 })
+            .sort({ priority: -1, created: 1 })
             .limit(1)
         const top_queued = await db.to_array(position)
         log('Position %O', top_queued)
         if (!top_queued || top_queued.length < 1) {
-            const err = new Error('No position found')
-            err.status_code = 404
+            const err = error.not_found
+            err.status_message = 'No position found'
             throw err
         }
         return Object.assign(top_queued[ 0 ], { fen: top_queued[ 0 ]._id, _id: undefined })
@@ -164,7 +187,9 @@ async function Position() {
         add_position,
         get_top_queued,
         fetch,
-        set_status
+        set_status,
+        get_positions_by_status,
+        STATUS
     }
 }
 

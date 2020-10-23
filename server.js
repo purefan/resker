@@ -57,10 +57,12 @@ async function prepare_raw() {
         },
         strict: true
     })
+    app.use(bodyParser.json())
     app.use(express.json({ limit: '15mb' }))
     app.use(express.urlencoded({ limit: '15mb', extended: true }))
     app.disable('x-powered-by')
     app.use(osprey_middleware)
+    app.use(middleware.headers)
     app.use(controller.position)
     app.use(controller.client)
     app.use(controller.stat)
@@ -75,7 +77,6 @@ async function prepare_raw() {
  * @param {*} err
  * @param {*} req
  * @param {*} res
- * @param {*} next
  */
 function error_handler(err, req, res) {
     const log = debug.extend('error_hander')

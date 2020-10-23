@@ -50,7 +50,13 @@ async function get_position_analysis_queue(req, res) {
     const log = debug.extend('get_position_analysis_queue')
     try {
         const position = await model.position()
-        const queued = await position.get_top_queued()
+        const positions_in_progress = await position.get_positions_by_status(position.STATUS.IN_PROGRESS)
+        let queued = positions_in_progress.filter(pos => pos.client == req.resker_headers.resker_client)
+        if (queued.length < 1) {
+            queued = await position.get_top_queued()
+        } else {
+            queued = queued.pop()
+        }
         log('Queued %O', queued)
         return res
             .status(200)
