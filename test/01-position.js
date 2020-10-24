@@ -2,7 +2,7 @@ const supertest = require('supertest')
 const request = supertest(`localhost:${process.env.HTTP_PORT}`)
 const server = require('./server')
 const mock = require('./mock')
-
+const Test = require('../lib/test')
 
 const position = {
     pos1: mock.gen_fen(),
