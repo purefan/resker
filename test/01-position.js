@@ -342,7 +342,7 @@ describe('1 - Position', function () {
                     multipv: 1,
                     score: 1.2,
                     engine_name: 'Migue 1.3.1',
-                    steps: [ '-'.repeat(1000000 * 15) ]
+                    steps: [ '-'.repeat(1.4*10^+7) ]
                 })
                 .expect(200)
         })
