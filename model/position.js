@@ -172,7 +172,10 @@ async function Position() {
             $push: { analysis: param.analysis },
             $set: { updated: Date.now() }
         }
-        if (in_db.depth_goal <= param.analysis.depth) {
+        if (
+            (in_db.depth_goal <= param.analysis.depth) // Reached the target goal
+                || (param.analysis.depth == 0 && param.analysis.score == 999)
+        ) {
             update_params.$set.status = 2
         }
         log('Update params: %s', JSON.stringify(param.analysis).substr(0, 300))
