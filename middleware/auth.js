@@ -24,7 +24,7 @@ function handler() {
             return res.status(401).send('No api key.')
         }
 
-        const client = await validate_key(req.headers)
+        const client = await validate_api_key(req.headers)
         debug('client', client)
         if (!client) {
             debug('Wrong api key', req.headers)
@@ -55,17 +55,17 @@ const security_definition = {
 }
 
 /**
- *
- * @param {*} api_key
+ * @param {Object} headers
+ * @param {String} [headers.api_key]
  */
-async function validate_key(headers) {
+async function validate_api_key(headers) {
     if (headers[ 'x-api-key' ] === process.env.X_API_KEY) {
         debug('Key matches envvar')
         return true
     }
     const client = await model.client()
     const clients = await client.fetch_all_clients()
-    debug('validate_key', headers)
+    debug('validate_api_key', headers)
     const valid_client = clients.find(client => {
         debug('Checking client', client)
         if (!client.hash) {
@@ -86,7 +86,7 @@ async function validate_key(headers) {
 /**
  *
  * @param {String} api_key
- * @returns {Object} { hash: <String>, api_key: <String> }
+ * @returns {Promise<Object>} { hash: <String>, api_key: <String> }
  */
 async function prepare_api_key(api_key) {
     const salt = await bcrypt.genSalt(11)
