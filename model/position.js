@@ -3,7 +3,12 @@ const db = require('../lib/db')
 const error = require('../lib/error')
 
 /**
+ * @module DB
  * @typedef {Object} Position
+ * @property {String} _id FEN
+ */
+
+/**
  * @description Object as represented in the db that stores information about a specific position
  * @property {Client} client
  */

@@ -4,14 +4,13 @@ uses:
   position: position.raml
 types:
   positions_to_do:
-    type: integer
-    description: How many positions are left to process
+    type: array
+    items: position.position
+    description: Positions left to process
   positions_processing:
-    type: object
-    properties:
-      total: integer
-      positions: position.position[]
-    description: How many positions are currently being processed
+    type: array
+    items: position.position
+    description: Positions currently being processed
   positions_completed:
     type: integer
     description: How many positions have been analyzed matching the criteria
