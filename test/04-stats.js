@@ -1,4 +1,5 @@
 const supertest = require('supertest')
+const TestClientUtils = require('../lib/test')()
 const request = supertest(`localhost:${process.env.HTTP_PORT}`)
 const TestUtils = require('../lib/test')()
 const server = require('./server')
@@ -51,39 +52,38 @@ describe('4 - Stats', function () {
 
     describe('4.2 - Stats get updated', () => {
         describe('4.2.1 - Queue a position', function () {
-            let stats = {}
-            let updated_stats = {}
-            before('Fetch initial stats', function () {
+            before('Clean mongo', function () {
+                return TestClientUtils.clean_mock_mongo()
+            })
+
+            before('Queue a position', async function () {
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 1}) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 2}) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 2}) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 3}) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 3}) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 3}) })
+                return true
+            })
+
+            it('Counters match', function () {
                 return get_stats(TestUtils.clients_manager.get('first').get('headers'))
                     .then(assert_stats_object)
                     .then(res => {
-                        stats = res.body
-                    })
-            })
-
-            before('Queue a position', function () {
-                return add_position({ half_move: 1 })
-            })
-
-            it('Counter matches +1', function () {
-                return get_stats(TestUtils.clients_manager.get('first').get('headers'))
-                    .then(assert_stats_object)
-                    .then(res => {
-                        if ((stats.to_do + 1) != res.body.to_do) {
-                            throw new Error('Queueing a position did not increase the counter')
+                        if (res.body.to_do.length != 6) {
+                            throw new Error('Queueing a position did not increase the counter as expected')
                         }
-                        updated_stats = res.body
+
+                        if (res.body.processing.length != 0) {
+                            throw new Error('stats corruption on processing')
+                        }
+                        if (res.body.completed != 0) {
+                            throw new Error('stats corruption on completed')
+                        }
+
                     })
             })
 
-            it('Other counters did not change', function () {
-                if (stats.processing != updated_stats.processing) {
-                    throw new Error('stats corruption on processing')
-                }
-                if (stats.completed != updated_stats.completed) {
-                    throw new Error('stats corruption on completed')
-                }
-            })
         })
 
         /**
@@ -99,6 +99,7 @@ describe('4 - Stats', function () {
                         stats = res.body
                     })
             })
+
             before('Queue a position', function () {
                 return add_position({ half_move: 2 })
             })
@@ -111,7 +112,8 @@ describe('4 - Stats', function () {
                 return get_stats(TestUtils.clients_manager.get('first').get('headers'))
                     .then(assert_stats_object)
                     .then(res => {
-                        if ((stats.processing + 1) != res.body.processing) {
+                        console.log('----->', stats, res.body)
+                        if ((stats.processing.length + 1) != res.body.processing.length) {
                             throw new Error('Processing a position did not increase the counter')
                         }
 
@@ -120,7 +122,7 @@ describe('4 - Stats', function () {
             })
 
             it('Other counters did not change', function () {
-                if (stats.to_do != updated_stats.to_do) {
+                if (stats.to_do.length != updated_stats.to_do.length) {
                     throw new Error('stats corruption on to_do')
                 }
                 if (stats.completed != updated_stats.completed) {
@@ -162,10 +164,10 @@ describe('4 - Stats', function () {
                     })
             })
             it('Other counters did not change', function () {
-                if (stats.to_do != updated_stats.to_do) {
+                if (stats.to_do.length != updated_stats.to_do.length) {
                     throw new Error('stats corruption on to_do')
                 }
-                if (stats.processing != updated_stats.processing) {
+                if (stats.processing.length != updated_stats.processing.length) {
                     throw new Error('stats corruption on processing')
                 }
             })
@@ -210,14 +212,15 @@ function reserve_position(param) {
 /**
  *
  * @param {object} param
- * @param {number} param.half_move
+ * @param {number} [param.half_move]
+ * @param {String} [param.fen]
  */
 function add_position(param) {
     return request
         .post('/position')
         .set(headers)
         .send({
-            fen: `r2q1k1r/p2p1pp1/2n4p/2pQP1b1/2N5/2N5/PP3PPP/R3K2R w KQ - 1 ${param.half_move}`,
+            fen: param.fen || `r2q1k1r/p2p1pp1/2n4p/2pQP1b1/2N5/2N5/PP3PPP/R3K2R w KQ - 1 ${param.half_move}`,
             depth_goal: 30,
             multipv_goal: 4,
             priority: 10
@@ -239,6 +242,7 @@ function assert_stats_object(res) {
     if (!Object.prototype.hasOwnProperty.call(res.body, 'completed')) {
         throw new Error('Missing field "completed"')
     }
+
     return res
 }
 

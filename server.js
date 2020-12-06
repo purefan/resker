@@ -9,10 +9,11 @@
 
 const express = require('express')
 const app = express()
-const debug = require('debug')('resker-app')
+const debug = require('debug')('resker:server')
 const controller = require('./controller')
 const middleware = require('./middleware')
 const join = require('path').join
+const bodyParser = require('body-parser')
 
 const osprey = require('osprey')
 const path = join(__dirname, 'assets', 'raml', 'api.raml')
@@ -26,6 +27,7 @@ async function prepare() {
     const raw_app = await prepare_raw()
     // prepare error handler for raml fails
     raw_app.use(function (err, req, res, next) {
+        console.log('ERROR', err.message, err)
         // logic
         if (err.message == 'request entity too large') {
             return res

@@ -3,7 +3,12 @@ const db = require('../lib/db')
 const error = require('../lib/error')
 
 /**
+ * @module DB
  * @typedef {Object} Position
+ * @property {String} _id FEN
+ */
+
+/**
  * @description Object as represented in the db that stores information about a specific position
  * @property {Client} client
  */
@@ -172,7 +177,10 @@ async function Position() {
             $push: { analysis: param.analysis },
             $set: { updated: Date.now() }
         }
-        if (in_db.depth_goal <= param.analysis.depth) {
+        if (
+            (in_db.depth_goal <= param.analysis.depth) // Reached the target goal
+                || (param.analysis.depth == 0 && param.analysis.score == 999)
+        ) {
             update_params.$set.status = 2
         }
         log('Update params: %s', JSON.stringify(param.analysis).substr(0, 300))
