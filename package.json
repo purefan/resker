@@ -32,7 +32,8 @@
     "osprey": "^0.5.4",
     "osprey-middleware": "^0.4.3",
     "raml2obj": "^6.6.0",
-    "resker-debug": "file:lib/debug"
+    "resker-debug": "file:lib/debug",
+    "snappy": "^6.3.5"
   },
   "devDependencies": {
     "mocha": "^7.1.1",

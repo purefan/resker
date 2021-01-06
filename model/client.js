@@ -66,7 +66,6 @@ async function Client() {
                 client_name: param.client_name
             },
             { upsert: true })
-        log('Checking', await fetch_client(param))
         return true
     }
 

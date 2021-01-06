@@ -21,12 +21,13 @@ module.exports = router
  */
 async function post_position_analysis(req, res) {
     const log = debug.extend('post_position_analysis')
-    log('req headers %O', req.headers)
+    log('req headers %O', req.resker_headers)
     try {
         const position_model = await model.position()
         await position_model.add_analysis({
             fen: req.body.fen,
             analysis: req.body
+            , client_name: req.resker_headers.resker_client
         })
         log('All good')
 
@@ -132,7 +133,7 @@ async function post_position(req, res) {
         const position = await model.position()
         const to_add = {
             fen: req.body.fen,
-            client: req.headers.resker_client,
+            client_name: req.resker_headers.resker_client,
             depth_goal: req.body.depth_goal,
             priority: req.body.priority,
             multipv_goal: req.body.multipv_goal
@@ -140,7 +141,7 @@ async function post_position(req, res) {
         log('position', to_add)
         await position.add_position(to_add)
         const client = await model.client()
-        await client.set_last_active({ client_name: to_add.client })
+        await client.set_last_active( to_add )
         res.status(200).send()
     } catch (error) {
         log('Error', error)

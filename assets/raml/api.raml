@@ -73,6 +73,22 @@ uses:
               required: true
 
 
+/game:
+  /{game_id}:
+    get:
+      securedBy: api_key
+  post:
+    description: Inserts a game in the database
+    securedBy: api_key
+    body:
+      application/json:
+        type: game.game_to_db
+  get:
+    description: Filters games
+    securedBy: api_key
+    queryParameters:
+      type: game.game_from_db
+
 /setting:
   put:
     description: Changes a limited number of operational settings
@@ -164,3 +180,10 @@ uses:
                 type: position.position
           400:
             description: No position found
+/version:
+  get:
+    description: Returns which version of resker is running. Useful for healthchecks
+    responses:
+      200:
+        body:
+          text/plain:

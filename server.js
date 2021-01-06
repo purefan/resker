@@ -54,33 +54,39 @@ async function prepare_raw() {
         security: middleware.auth,
         disableErrorInterception: true,
         rejectOnErrors: true,
-        server: {
-            notFoundHandler: false
-        },
+        /* server: {
+                    notFoundHandler: false
+                }, */
         strict: true
     })
     app.use(bodyParser.json())
+    app.use(osprey_middleware)
     app.use(express.json({ limit: '15mb' }))
     app.use(express.urlencoded({ limit: '15mb', extended: true }))
     app.disable('x-powered-by')
-    app.use(osprey_middleware)
+
     app.use(middleware.headers)
+    app.use(middleware.query_url)
     app.use(controller.position)
     app.use(controller.client)
     app.use(controller.stat)
+    app.use(controller.game)
     app.use(error_handler)
 
     return app
 }
 
-// eslint-disable-next-line no-unused-vars
 /**
  *
+ * This will catch any error while processing a request and try to format it properly
+ * The parameter next is required for the function to register in express as an error handler
  * @param {*} err
  * @param {*} req
  * @param {*} res
+ * @param {function} next
+ *
  */
-function error_handler(err, req, res) {
+function error_handler(err, req, res, next) {
     const log = debug.extend('error_hander')
     log('Error function \n%O --> %s', err, err.message)
     if (err.message && err.message.includes('Request failed to validate against RAML')) {
@@ -98,7 +104,12 @@ function error_handler(err, req, res) {
 
     if (err.message && err.message.includes('request entity too large')) {
         log('Entity request too large')
-        return res.status(413)
+        return res.status(413).send('')
+    }
+
+    if (err.status_code && err.status_message) {
+        log('Given the error', err.status_code, err.status_message)
+        return res.status(err.status_code).send(err.status_message)
     }
 
     log('Did not identify the type of error %O', Object.keys(err))
