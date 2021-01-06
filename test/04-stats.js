@@ -112,7 +112,6 @@ describe('4 - Stats', function () {
                 return get_stats(TestUtils.clients_manager.get('first').get('headers'))
                     .then(assert_stats_object)
                     .then(res => {
-                        console.log('----->', stats, res.body)
                         if ((stats.processing.length + 1) != res.body.processing.length) {
                             throw new Error('Processing a position did not increase the counter')
                         }

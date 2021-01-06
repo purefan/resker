@@ -1,6 +1,8 @@
 const debug = require('resker-debug')('resker:model:position')
 const db = require('../lib/db')
 const error = require('../lib/error')
+const { Chess } = require('chess.js')
+require('mongodb')
 
 /**
  * @module DB
@@ -11,15 +13,22 @@ const error = require('../lib/error')
 /**
  * @description Object as represented in the db that stores information about a specific position
  * @property {Client} client
+ * @property {Mongodb.collection} collection
+ * @property {Mongodb.collection} col_position_game
  */
 async function Position() {
     const db_conn = await db.connect()
     const collection = db_conn.collection('position')
+    const col_position_game = db_conn.collection('position_game')
+
     const STATUS = {
         TO_DO: 0,
         IN_PROGRESS: 1,
         DONE: 2
     }
+
+    // See add_position_to_game
+    const MAX_GAMES_PER_FEN = 1000000
 
     /**
      * Fetches param.fen from the database
@@ -62,9 +71,15 @@ async function Position() {
     /**
      *
      * @param {Object} params
+     * @param {String} params.client_name
      */
     async function insert(params) {
         const log = debug.extend('insert')
+        if (!params.client_name) {
+            throw new Error('Missing client_ when adding a position')
+        }
+        assert_fen_is_valid(params.fen)
+        log('params', params)
         const insert_query = {
             $setOnInsert: {
                 _id: params.fen,
@@ -72,18 +87,15 @@ async function Position() {
                 depth_goal: params.depth_goal || 40,
                 priority: params.priority || 5,
                 multipv_goal: params.multipv_goal || 4,
-                client: params.client,
+                client: params.client_name,
                 created: Date.now()
             } // Adding $set here would make this an update instead of an insert
         }
-        log('Inserting %O', insert_query)
         await collection.updateOne(
             { _id: params.fen },
             insert_query,
             { upsert: true }
         )
-        log('Checking %O', await fetch(params))
-        log('Added position')
     }
 
     /**
@@ -94,7 +106,7 @@ async function Position() {
      */
     async function get_positions_by_status(status) {
         const log = debug.extend('get_positions_by_status')
-        console.log('Fetching with status ', status)
+        log('Fetching with status ', status)
         const dataset = await collection
             .find({status})
             .limit(50)
@@ -104,7 +116,8 @@ async function Position() {
     }
 
     /**
-     *
+     * Fetches the most urgent position to analyze.
+     * @returns {Object}
      */
     async function get_top_queued() {
         const log = debug.extend('get_top_queued')
@@ -125,7 +138,8 @@ async function Position() {
 
     /**
      *
-     * @param {MongoClient} db
+     * @param {Object} param
+     * @param {String} param.fen
      */
     async function add_position(param) {
         const log = debug.extend('add_position')
@@ -141,6 +155,20 @@ async function Position() {
 
     /**
      *
+     * @param {String} fen
+     */
+    function assert_fen_is_valid(fen) {
+        const chess = new Chess()
+        if (!chess.load(fen)) {
+            const invalid_fen = new Error('Given fen is invalid')
+            invalid_fen.status_code = 400
+            invalid_fen.status_message = `Given fen is invalid: ${fen}`
+            throw invalid_fen
+        }
+    }
+
+    /**
+     *
      * @param {Object} param
      * @param {String} param.client stocto self reported name
      * @param {Number} param.status 0: not-started, 1: started, 2: finished
@@ -150,7 +178,7 @@ async function Position() {
         const update_params = {
             $set: {
                 status: param.status || 0, // reset so it gets picked up again
-                client: param.client || 'unknown',
+                client: param.client || param.client_name || 'unknown',
                 updated: Date.now()
             }
         }
@@ -165,6 +193,7 @@ async function Position() {
      * @param {Object} param
      * @param {Object} param.analysis
      * @param {String} param.fen
+     * @todo pushing analysis may overflow the 16MB limit on mongo. Filter analysis by depth
      */
     async function add_analysis(param) {
         const log = debug.extend('add_analysis')
@@ -174,7 +203,7 @@ async function Position() {
             in_db = await fetch(param)
         }
         const update_params = {
-            $push: { analysis: param.analysis },
+            $push: { analysis: param.analysis }, // pushing overflows the 16MB limit on mongo @TODO
             $set: { updated: Date.now() }
         }
         if (
@@ -190,14 +219,49 @@ async function Position() {
                 update_params)
     }
 
+    /**
+     * Mongodb has a limit of 16 MBs per document, which in a database of millions of
+     * games, could be a problem especially for the first few moves (1.e4).
+     * The strategy used here to circunvent this limitation is to limit the number of
+     * games referenced per document. To accomodate these documents we have a new collection
+     * the "position_game" with documents having this structure {fen: string, games: string[]}
+     * The games property is an array of ObjectIDs and in theory, there should be space for
+     * around 1333333 items in this field, but to keep it safe Im arbitrarily rounding it down
+     * to 1000000
+     * @param {Object} param
+     * @param {String} param.game_id
+     * @param {String} param.fen
+     * @param {String} param.client_name
+     */
+    async function add_position_to_game(param) {
+        const log = debug.extend('add_position_to_game')
+        log('param', param)
+        const query_params = {
+            fen: param.fen,
+            count: { $lt: MAX_GAMES_PER_FEN }
+        }
+        const update_params = {
+            $push: {game_id: param.game_id}
+            , $inc: {count: 1}
+        }
+        const options_params = { upsert: true }
+        log('Going to updateOne', query_params, update_params, options_params)
+        const result = await col_position_game.updateOne(query_params, update_params, options_params)
+        log('Finished updateOne for %s, going to make sure position exists in position', param.fen)
+        // make sure the position exists
+        await insert(param)
+        log('result', result.result)
+    }
+
     return {
-        add_analysis,
-        add_position,
-        get_top_queued,
-        fetch,
-        set_status,
-        get_positions_by_status,
-        STATUS
+        add_analysis
+        , add_position
+        , add_position_to_game
+        , get_top_queued
+        , fetch
+        , set_status
+        , get_positions_by_status
+        , STATUS
     }
 }
 

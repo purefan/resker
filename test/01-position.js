@@ -43,6 +43,7 @@ describe('1 - Position', function () {
                     if (res.body.depth_goal != 30) throw new Error('Wrong depth')
                     if (res.body.multipv_goal != 4) throw new Error('Wrong multipv')
                     if (res.body.client != client) throw new Error('Wrong client')
+                    if (!res.body.fen) throw new Error('Must include fen')
                 })
         })
 
@@ -90,7 +91,6 @@ describe('1 - Position', function () {
             const pos1 = mock.gen_fen()
             const pos2 = mock.gen_fen()
             before('Book the positions', async function() {
-                console.log(Test())
                 await Test().clean_mock_mongo()
                 await request
                     .post('/position')
