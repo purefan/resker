@@ -57,12 +57,12 @@ describe('4 - Stats', function () {
             })
 
             before('Queue a position', async function () {
-                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 1}) })
-                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 2}) })
-                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 2}) })
-                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 3}) })
-                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 3}) })
-                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({half_move: 3}) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({ half_move: 1 }) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({ half_move: 2 }) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({ half_move: 2 }) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({ half_move: 3 }) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({ half_move: 3 }) })
+                await add_position({ fen: TestUtils.clients_manager.get('first').make_random_fen({ half_move: 3 }) })
                 return true
             })
 
@@ -162,6 +162,7 @@ describe('4 - Stats', function () {
                         updated_stats = res.body
                     })
             })
+
             it('Other counters did not change', function () {
                 if (stats.to_do.length != updated_stats.to_do.length) {
                     throw new Error('stats corruption on to_do')

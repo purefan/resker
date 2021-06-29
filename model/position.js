@@ -34,14 +34,21 @@ async function Position() {
      * Fetches param.fen from the database
      * @param {Object} param
      * @param {String} param.fen
+     * @returns {Promise<Object>}
      */
     async function fetch(param) {
         const log = debug.extend('fetch')
-        log('Fetching %s', param.fen)
+
+        log('model:fetch() ing %s', param.fen)
         if (!param.fen) {
             throw new Error('fen is required')
         }
-        return await collection.findOne({ _id: param.fen })
+
+        const position =  await collection.findOne({ _id: param.fen })
+        log('model:fetch() position', position)
+        const fixed_position = fix_id_to_fen(position)
+        log('model:fetch() fixed_position', fixed_position)
+        return (fixed_position)
     }
 
     /**
@@ -121,19 +128,35 @@ async function Position() {
      */
     async function get_top_queued() {
         const log = debug.extend('get_top_queued')
-        log('Fetching')
+        log('get top queued')
         const position = await collection
             .find({ status: 0 })
             .sort({ priority: -1, created: 1 })
             .limit(1)
         const top_queued = await db.to_array(position)
-        log('Position %O', top_queued)
+        log('get top queued Position %O', top_queued)
         if (!top_queued || top_queued.length < 1) {
             const err = error.not_found
             err.status_message = 'No position found'
             throw err
         }
-        return Object.assign(top_queued[ 0 ], { fen: top_queued[ 0 ]._id, _id: undefined })
+        return fix_id_to_fen(top_queued[0]) //Object.assign(top_queued[ 0 ], { fen: top_queued[ 0 ]._id, _id: undefined })
+    }
+
+    function fix_id_to_fen(position) {
+        const log = debug.extend('fix_id_to_fen')
+        if (Array.isArray(position)) {
+            return position.map(fix_id_to_fen)
+        }
+        if (!position || !position._id) {
+            log('fix_id_to_fen position is no good', position)
+            return position
+        }
+        position = position || {}
+        log('-----> PRE', position)
+        const after = Object.assign({}, position, {fen: position._id, _id: undefined})
+        log('------> AFTER', after)
+        return after
     }
 
     /**

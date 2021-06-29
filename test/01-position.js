@@ -68,9 +68,11 @@ describe('1 - Position', function () {
                 .set('client_name', client)
                 .expect(200)
                 .expect(res => {
+                    console.log('-->', res.body)
                     if (res.body.depth_goal != 40) throw new Error('Wrong position depth')
                     if (res.body.priority != 10) throw new Error('Wrong priority')
                     if (res.body.multipv_goal != 5) throw new Error('Wrong multipv')
+                    if (!res.body.hasOwnProperty('fen')) throw new Error('Position lacks fen')
                 })
         })
 
@@ -87,19 +89,19 @@ describe('1 - Position', function () {
                 .expect(res => res.body == 'Invalid fen')
         })
 
-        describe('1.1.6 - Avoid abandoning a position', function() {
+        describe('1.1.6 - Avoid abandoning a position', function () {
             const pos1 = mock.gen_fen()
             const pos2 = mock.gen_fen()
-            before('Book the positions', async function() {
+            before('Book the positions', async function () {
                 await Test().clean_mock_mongo()
                 await request
                     .post('/position')
                     .set(headers)
                     .send({
                         fen: pos1,
-                        depth_goal:22,
+                        depth_goal: 22,
                         multipv_goal: 2,
-                        priority:1
+                        priority: 1
                     })
 
                 await request
@@ -107,9 +109,9 @@ describe('1 - Position', function () {
                     .set(headers)
                     .send({
                         fen: pos2,
-                        depth_goal:32,
+                        depth_goal: 32,
                         multipv_goal: 4,
-                        priority:2
+                        priority: 2
                     })
             })
 
@@ -137,9 +139,9 @@ describe('1 - Position', function () {
                     .set(headers)
                     .send({
                         fen: mock.gen_fen(),
-                        depth_goal:32,
+                        depth_goal: 32,
                         multipv_goal: 4,
-                        priority:3
+                        priority: 3
                     })
             })
 
@@ -342,7 +344,7 @@ describe('1 - Position', function () {
                     multipv: 1,
                     score: 1.2,
                     engine_name: 'Migue 1.3.1',
-                    steps: [ '-'.repeat(1.4*10^+7) ]
+                    steps: [ '-'.repeat(1.4 * 10 ^ +7) ]
                 })
                 .expect(200)
         })

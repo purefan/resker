@@ -51,8 +51,11 @@ async function get_position_analysis_queue(req, res) {
     const log = debug.extend('get_position_analysis_queue')
     try {
         const position = await model.position()
+        log('----> 1')
         const positions_in_progress = await position.get_positions_by_status(position.STATUS.IN_PROGRESS)
+        log('----> 2', positions_in_progress)
         let queued = positions_in_progress.filter(pos => pos.client == req.resker_headers.resker_client)
+        log('----> 3')
         if (queued.length < 1) {
             queued = await position.get_top_queued()
         } else {
@@ -92,7 +95,7 @@ async function get_position(req, res) {
             .send(position)
     } catch (error) {
         log('Error', error)
-        res.status(404).send()
+        res.status(error.status_code || 404).send(error.status_message || '')
     }
 }
 
@@ -131,6 +134,8 @@ async function post_position(req, res) {
     const log = debug.extend('post_position')
     try {
         const position = await model.position()
+        const client = await model.client()
+
         const to_add = {
             fen: req.body.fen,
             client_name: req.resker_headers.resker_client,
@@ -138,9 +143,9 @@ async function post_position(req, res) {
             priority: req.body.priority,
             multipv_goal: req.body.multipv_goal
         }
-        log('position', to_add)
+        log('controller:position:post_position to_add', to_add)
+
         await position.add_position(to_add)
-        const client = await model.client()
         await client.set_last_active( to_add )
         res.status(200).send()
     } catch (error) {
